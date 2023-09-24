@@ -261,10 +261,10 @@ const onRollEnd = (mutation) => {
 
   if (lastColor !== selectedColor) {
     // You lost the last round, specify the winning color
-    sendDiscordMessage(`Oops! You lost ${bet} on ${selectedColor}. ${colors[lastColor]} won.`);
+    sendDiscordMessage(`Oops! You lost ${startBet} on ${selectedColor}. ${colors[lastColor]} won.`);
   } else if (previousColor === lastColor) {
     // You won the last round
-    sendDiscordMessage(`Congratulations! You won ${bet} on ${selectedColor}.`);
+    sendDiscordMessage(`Congratulations! You won ${bet * 2} on ${selectedColor}.`);
   }
 
   bet =
@@ -288,6 +288,7 @@ const onRollEnd = (mutation) => {
 
   !lastGreen && setTimeout(() => doBet(), 10000);
 };
+
 
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => onRollEnd(mutation));
