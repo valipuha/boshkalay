@@ -221,11 +221,15 @@ const doBet = () => {
   betButtons[selectedColor].click();
   beted = true;
 
-  // Update the bet amount for the next round
-  bet = betAmount;
+  // Update the current bet displayed in the HTML panel
+  currentBetPanel.innerText = betAmount;
 
   sendDiscordMessage(`Placed a bet of ${betAmount} on ${selectedColor}.`);
+
+  // Update the bet amount for the next round, doubling it
+  bet = betAmount * 2;
 };
+
 
 
 
