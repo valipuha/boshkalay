@@ -36,10 +36,6 @@ const colors = {
 };
 
 async function sendDiscordMessage(message) {
-  if (!webhookEnabled) {
-    return; // Don't send messages when webhook is disabled
-  }
-
   try {
     const response = await fetch(discordWebhookUrl, {
       method: 'POST',
@@ -60,27 +56,8 @@ async function sendDiscordMessage(message) {
     console.error('Error sending message to Discord:', error);
   }
 }
+
 sendDiscordMessage('Script has started.');
-
-const updateBalance = () => {
-  // Retrieve balance from console log
-  const consoleLogs = console.history();
-  const logEntry = consoleLogs[consoleLogs.length - 1];
-  
-  if (logEntry) {
-    try {
-      const logData = JSON.parse(logEntry.message);
-
-      // Check if the log data contains balance information
-      if (logData.hasOwnProperty('balance')) {
-        const newBalance = logData.balance;
-        sendDiscordMessage(`Your current balance is ${newBalance} points.`);
-      }
-    } catch (error) {
-      console.error('Error parsing console log:', error);
-    }
-  }
-};
 
 const panelHTML = `
     <style>
@@ -308,8 +285,6 @@ const onRollEnd = (mutation) => {
   beted = false;
 
   !lastGreen && setTimeout(() => doBet(), 10000);
-
-  updateBalance();
 };
 
 
