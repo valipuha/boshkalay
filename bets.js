@@ -227,14 +227,8 @@ const doBet = () => {
   sendDiscordMessage(`Placed a bet of ${betAmount} on ${selectedColor}.`);
 
   // Update the bet amount for the next round, whether it's a win or loss
-  bet = betAmount;
+  bet = beted ? bet * 2 : startBet;
 };
-
-
-
-
-
-
 
 const changeState = (newState) => {
   if ((!startBetInput.value && newState) || isStarted === newState) return;
