@@ -239,6 +239,8 @@ const onRollEnd = (mutation) => {
   lastColor = balls.lastChild.children[0].classList[0];
   lastColorPanel.innerHTML = colors[lastColor];
 
+  beted = false; // Reset the beted flag
+
   if (lastColor === selectedColor) {
     // You won the last round
     sendDiscordMessage(`Congratulations! You won ${bet} on ${selectedColor}.`);
@@ -250,8 +252,7 @@ const onRollEnd = (mutation) => {
   bet =
     lastColor !== selectedColor &&
     (maxBet ? bet * 2 <= maxBet : true) &&
-    isStarted &&
-    beted
+    isStarted
       ? bet * 2
       : startBet;
 
@@ -263,8 +264,6 @@ const onRollEnd = (mutation) => {
   }
 
   lastColor !== "green" && (lastGreen = false);
-
-  beted = false;
 
   !lastGreen && setTimeout(() => doBet(), 10000);
 };
