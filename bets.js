@@ -289,7 +289,6 @@ const onRollEnd = (mutation) => {
   !lastGreen && setTimeout(() => doBet(), 10000);
 };
 
-
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => onRollEnd(mutation));
 });
