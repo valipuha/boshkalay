@@ -1,6 +1,6 @@
 const betInput = document.querySelector("#roulette_amount");
 
-const discordWebhookUrl = 'https://discord.com/api/webhooks/1153403245868355584/wMj89cYRouP8hnOECRkVRvP9icHgzdG3aeLDPiNhF0GR6eiWwFVlHyB3T66p1M4Q-4XC';
+const discordWebhookUrl = 'https://discord.com/api/webhooks/1155594517009928242/6LFq4e8JFj8tP_F08z0WUYuT_tOBqTts6FxC3H8oHFLqp-5bZqKawl7PXc-zcoMpEend';
 
 let webhookEnabled = true; // Initialize it as enabled
 
