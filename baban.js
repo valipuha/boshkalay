@@ -2,6 +2,35 @@ const betInput = document.querySelector("#roulette_amount");
 
 const webhookUrl = "https://discord.com/api/webhooks/1155594517009928242/6LFq4e8JFj8tP_F08z0WUYuT_tOBqTts6FxC3H8oHFLqp-5bZqKawl7PXc-zcoMpEend";
 
+let webhookEnabled = true; // Initialize it as enabled
+
+async function sendDiscordMessage(message) {
+    if (!webhookEnabled) {
+      return; // Don't send messages when webhook is disabled
+    }
+  
+    try {
+      const response = await fetch(discordWebhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: message,
+        }),
+      });
+  
+      if (response.ok) {
+        console.log('Message sent to Discord successfully.');
+      } else {
+        console.error('Failed to send message to Discord:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('Error sending message to Discord:', error);
+    }
+  }
+
+
 const balls = document.querySelector(
   "#select_roulette > div.rolling > div.jackpot > ul"
 );
@@ -152,37 +181,6 @@ const panelHTML = `
 
 panel.innerHTML = panelHTML + panel.innerHTML;
 
-const sendWebhookMessage = async (message, amountWon, amountLost, nextBetAmount) => {
-    try {
-      const content = `${message}\nAmount Won: ${amountWon}\nAmount Lost: ${amountLost}\nNext Bet Amount: ${nextBetAmount}`;
-  
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content }),
-      });
-  
-      if (response.status === 204) {
-        console.log("Webhook message sent successfully.");
-      } else {
-        console.error("Failed to send webhook message:", response.statusText);
-      }
-    } catch (error) {
-      console.error("Error sending webhook message:", error.message);
-    }
-  };
-  
-  // Function to determine the outcome and send a Discord message with additional data
-  const determineOutcomeAndSendWebhook = (winningColor) => {
-    if (winningColor === selectedColor) {
-      sendWebhookMessage("I won!", bet, 0, bet);
-    } else {
-      sendWebhookMessage(`I lost. ${colors[winningColor]} won.`, 0, bet, bet * 2);
-    }
-  };
-
 const startBetInput = document.querySelector(".auto-bet__start-bet input");
 const maxBetInput = document.querySelector(".auto-bet__max-bet input");
 const startButton = document.querySelector(".auto-bet__start");
@@ -217,51 +215,78 @@ const doBet = () => {
 };
 
 const changeState = (newState) => {
-  if ((!startBetInput.value && newState) || isStarted === newState) return;
-
-  bet = parseInt(startBetInput.value) || 0;
-  maxBet = parseInt(maxBetInput.value) || 0;
-
-  startBet = bet;
-
-  isStarted = newState;
-  state.innerHTML = scriptStates[newState];
-
-  currentBetPanel.innerText = bet || "None";
-  maxBetPanel.innerHTML = maxBet || "None";
-
-  startBetInput.value = "0";
-  maxBetInput.value = "0";
-
-  !isRolling && doBet();
-};
+    if ((!startBetInput.value && newState) || isStarted === newState) return;
+  
+    bet = parseInt(startBetInput.value) || 0;
+    maxBet = parseInt(maxBetInput.value) || 0;
+  
+    startBet = bet;
+  
+    isStarted = newState;
+    state.innerHTML = scriptStates[newState];
+  
+    currentBetPanel.innerText = bet || "None";
+    maxBetPanel.innerHTML = maxBet || "None";
+  
+    startBetInput.value = "0";
+    maxBetInput.value = "0";
+  
+    !isRolling && doBet();
+  
+    // Toggle webhook status based on the newState
+    webhookEnabled = newState;
+  };
+  
 
 const onRollEnd = (mutation) => {
-  if (!mutation.addedNodes.length) return;
-
-  lastColor = balls.lastChild.children[0].classList[0];
-  lastColorPanel.innerHTML = colors[lastColor];
-
-  bet =
-    lastColor !== selectedColor &&
-    (maxBet ? bet * 2 <= maxBet : true) &&
-    isStarted &&
-    beted
-      ? bet * 2
-      : startBet;
-
-  currentBetPanel.innerText = bet;
-
-  if (isStarted) {
-    lastColor === "green" && (lastGreen = true);
-    selectedColor = lastColor;
-  }
-
-  lastColor !== "green" && (lastGreen = false);
-
-  beted = false;
-  !lastGreen && setTimeout(() => doBet(), 10000);
+    if (!mutation.addedNodes.length) {
+      // No bet was placed
+      if (!beted) {
+        noBetCount++;
+        // Send a message through the webhook indicating no bet was placed
+        sendDiscordMessage(`No bet placed in round ${noBetCount}.`);
+      }
+      return;
+    }
+  
+    // Reset noBetCount when a bet is placed
+    noBetCount = 0;
+  
+    const previousColor = selectedColor;
+    lastColor = balls.lastChild.children[0].classList[0];
+    lastColorPanel.innerHTML = colors[lastColor];
+  
+    if (lastColor !== selectedColor) {
+      // You lost the last round, specify the winning color
+      const winningColor = lastColor === "dark" ? "black" : lastColor;
+      sendDiscordMessage(`Oops! You lost ${startBet} on ${selectedColor}. ${winningColor} won.`);
+    } else if (previousColor === lastColor) {
+      // You won the last round
+      sendDiscordMessage(`Congratulations! You won ${bet * 2} on ${selectedColor}.`);
+    }
+  
+    bet =
+      lastColor !== selectedColor &&
+      (maxBet ? bet * 2 <= maxBet : true) &&
+      isStarted &&
+      beted
+        ? bet * 2
+        : startBet;
+  
+    currentBetPanel.innerText = bet;
+  
+    if (isStarted) {
+      lastColor === "green" && (lastGreen = true);
+      selectedColor = lastColor;
+    }
+  
+    lastColor !== "green" && (lastGreen = false);
+  
+    beted = false;
+  
+    !lastGreen && setTimeout(() => doBet(), 10000);
 };
+  
 
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => onRollEnd(mutation));
