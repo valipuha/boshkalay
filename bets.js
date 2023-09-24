@@ -209,7 +209,7 @@ const doBet = () => {
   if (!betInput || !isStarted) return;
 
   // Calculate the bet amount based on whether it's a win or a loss
-  const betAmount = beted ? bet * 2 : startBet;
+  let betAmount = beted ? bet * 2 : startBet;
 
   // Check if the calculated bet amount exceeds the maximum bet
   if (maxBet && betAmount > maxBet) {
@@ -226,9 +226,12 @@ const doBet = () => {
 
   sendDiscordMessage(`Placed a bet of ${betAmount} on ${selectedColor}.`);
 
-  // Update the bet amount for the next round, doubling it
-  bet = betAmount * 2;
+  // Update the bet amount for the next round, whether it's a win or loss
+  bet = betAmount;
 };
+
+
+
 
 
 
