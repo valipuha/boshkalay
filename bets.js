@@ -255,8 +255,17 @@ const onRollEnd = (mutation) => {
   // Reset noBetCount when a bet is placed
   noBetCount = 0;
 
+  const previousColor = selectedColor;
   lastColor = balls.lastChild.children[0].classList[0];
   lastColorPanel.innerHTML = colors[lastColor];
+
+  if (lastColor !== selectedColor) {
+    // You lost the last round, specify the winning color
+    sendDiscordMessage(`Oops! You lost ${bet} on ${selectedColor}. ${colors[lastColor]} won.`);
+  } else if (previousColor === lastColor) {
+    // You won the last round
+    sendDiscordMessage(`Congratulations! You won ${bet} on ${selectedColor}.`);
+  }
 
   bet =
     lastColor !== selectedColor &&
@@ -277,26 +286,8 @@ const onRollEnd = (mutation) => {
 
   beted = false;
 
-  // Check if it's a win or a loss and send a Discord message accordingly
-  if (lastColor === selectedColor) {
-    if (bet === 0) {
-      // No bet was placed, specify the winning color
-      sendDiscordMessage(`Oops! You lost 0 on ${selectedColor}. ${colors[lastColor]} won.`);
-    } else {
-      // You won the last round
-      sendDiscordMessage(`Congratulations! You won ${bet} on ${selectedColor}.`);
-    }
-  } else {
-    // You lost the last round, specify the winning color
-    sendDiscordMessage(`Oops! You lost ${bet} on ${selectedColor}. ${colors[lastColor]} won.`);
-  }
-
   !lastGreen && setTimeout(() => doBet(), 10000);
 };
-
-
-
-
 
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => onRollEnd(mutation));
