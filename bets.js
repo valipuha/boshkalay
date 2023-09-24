@@ -208,12 +208,16 @@ let noBetCount = 0;
 const doBet = () => {
   if (!betInput || !isStarted) return;
 
-  betInput.value = bet.toString();
+  // Calculate the bet amount based on whether it's a win or a loss
+  const betAmount = beted ? bet * 2 : startBet;
+
+  betInput.value = betAmount.toString();
   betButtons[selectedColor].click();
   beted = true;
 
-  sendDiscordMessage(`Placed a bet of ${bet} on ${selectedColor}.`);
+  sendDiscordMessage(`Placed a bet of ${betAmount} on ${selectedColor}.`);
 };
+
 
 const changeState = (newState) => {
   if ((!startBetInput.value && newState) || isStarted === newState) return;
