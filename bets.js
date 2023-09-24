@@ -215,6 +215,11 @@ const doBet = () => {
 const changeState = (newState) => {
   if ((!startBetInput.value && newState) || isStarted === newState) return;
 
+  // Reset noBetCount when you start betting
+  if (newState) {
+    noBetCount = 0;
+  }
+
   bet = parseInt(startBetInput.value) || 0;
   maxBet = parseInt(maxBetInput.value) || 0;
 
@@ -233,26 +238,26 @@ const changeState = (newState) => {
 };
 
 const onRollEnd = (mutation) => {
-  if (!mutation.addedNodes.length) return;
+  if (!mutation.addedNodes.length) {
+    // No bet was placed
+    noBetCount++;
 
-  const previousSelectedColor = selectedColor;
+    // Send a message through the webhook indicating no bet was placed
+    sendDiscordMessage(`No bet placed in round ${noBetCount}.`);
+    return;
+  }
+
+  // Reset noBetCount when a bet is placed
+  noBetCount = 0;
+
   lastColor = balls.lastChild.children[0].classList[0];
   lastColorPanel.innerHTML = colors[lastColor];
-
-  beted = false; // Reset the beted flag
-
-  if (lastColor === selectedColor) {
-    // You won the last round
-    sendDiscordMessage(`Congratulations! You won ${bet} on ${selectedColor}.`);
-  } else {
-    // You lost the last round
-    sendDiscordMessage(`Oops! You lost ${bet} on ${previousSelectedColor}.`);
-  }
 
   bet =
     lastColor !== selectedColor &&
     (maxBet ? bet * 2 <= maxBet : true) &&
-    isStarted
+    isStarted &&
+    beted
       ? bet * 2
       : startBet;
 
@@ -264,6 +269,16 @@ const onRollEnd = (mutation) => {
   }
 
   lastColor !== "green" && (lastGreen = false);
+
+  beted = false;
+
+  if (lastColor === selectedColor) {
+    // You won the last round
+    sendDiscordMessage(`Congratulations! You won ${bet} on ${selectedColor}.`);
+  } else {
+    // You lost the last round, specify the winning color
+    sendDiscordMessage(`Oops! You lost ${bet} on ${selectedColor}. ${colors[lastColor]} won.`);
+  }
 
   !lastGreen && setTimeout(() => doBet(), 10000);
 };
