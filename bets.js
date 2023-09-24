@@ -203,6 +203,8 @@ let isRolling = false;
 let beted = false;
 let lastGreen = false;
 
+let noBetCount = 0;
+
 const doBet = () => {
   if (!betInput || !isStarted) return;
 
@@ -211,7 +213,6 @@ const doBet = () => {
   beted = true;
 
   sendDiscordMessage(`Placed a bet of ${bet} on ${selectedColor}.`);
-
 };
 
 const changeState = (newState) => {
@@ -248,9 +249,6 @@ const onRollEnd = (mutation) => {
     }
     return;
   }
-
-  // Reset noBetCount when a bet is placed
-  noBetCount = 0;
 
   const previousColor = selectedColor;
   lastColor = balls.lastChild.children[0].classList[0];
