@@ -2,6 +2,8 @@ const betInput = document.querySelector("#roulette_amount");
 
 const discordWebhookUrl = 'https://discord.com/api/webhooks/1153403245868355584/wMj89cYRouP8hnOECRkVRvP9icHgzdG3aeLDPiNhF0GR6eiWwFVlHyB3T66p1M4Q-4XC';
 
+let webhookEnabled = true; // Initialize it as enabled
+
 const balls = document.querySelector(
   "#select_roulette > div.rolling > div.jackpot > ul"
 );
@@ -34,6 +36,10 @@ const colors = {
 };
 
 async function sendDiscordMessage(message) {
+  if (!webhookEnabled) {
+    return; // Don't send messages when webhook is disabled
+  }
+
   try {
     const response = await fetch(discordWebhookUrl, {
       method: 'POST',
@@ -54,7 +60,6 @@ async function sendDiscordMessage(message) {
     console.error('Error sending message to Discord:', error);
   }
 }
-
 sendDiscordMessage('Script has started.');
 
 const panelHTML = `
@@ -215,11 +220,6 @@ const doBet = () => {
 const changeState = (newState) => {
   if ((!startBetInput.value && newState) || isStarted === newState) return;
 
-  // Reset noBetCount when you start betting
-  if (newState) {
-    noBetCount = 0;
-  }
-
   bet = parseInt(startBetInput.value) || 0;
   maxBet = parseInt(maxBetInput.value) || 0;
 
@@ -235,15 +235,20 @@ const changeState = (newState) => {
   maxBetInput.value = "0";
 
   !isRolling && doBet();
+
+  // Toggle webhook status based on the newState
+  webhookEnabled = newState;
 };
+
 
 const onRollEnd = (mutation) => {
   if (!mutation.addedNodes.length) {
     // No bet was placed
-    noBetCount++;
-
-    // Send a message through the webhook indicating no bet was placed
-    sendDiscordMessage(`No bet placed in round ${noBetCount}.`);
+    if (!beted) {
+      noBetCount++;
+      // Send a message through the webhook indicating no bet was placed
+      sendDiscordMessage(`No bet placed in round ${noBetCount}.`);
+    }
     return;
   }
 
@@ -272,9 +277,15 @@ const onRollEnd = (mutation) => {
 
   beted = false;
 
+  // Check if it's a win or a loss and send a Discord message accordingly
   if (lastColor === selectedColor) {
-    // You won the last round
-    sendDiscordMessage(`Congratulations! You won ${bet} on ${selectedColor}.`);
+    if (bet === 0) {
+      // No bet was placed, specify the winning color
+      sendDiscordMessage(`Oops! You lost 0 on ${selectedColor}. ${colors[lastColor]} won.`);
+    } else {
+      // You won the last round
+      sendDiscordMessage(`Congratulations! You won ${bet} on ${selectedColor}.`);
+    }
   } else {
     // You lost the last round, specify the winning color
     sendDiscordMessage(`Oops! You lost ${bet} on ${selectedColor}. ${colors[lastColor]} won.`);
@@ -282,6 +293,9 @@ const onRollEnd = (mutation) => {
 
   !lastGreen && setTimeout(() => doBet(), 10000);
 };
+
+
+
 
 
 const observer = new MutationObserver((mutations) => {
