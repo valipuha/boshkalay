@@ -62,6 +62,26 @@ async function sendDiscordMessage(message) {
 }
 sendDiscordMessage('Script has started.');
 
+const updateBalance = () => {
+  // Retrieve balance from console log
+  const consoleLogs = console.history();
+  const logEntry = consoleLogs[consoleLogs.length - 1];
+  
+  if (logEntry) {
+    try {
+      const logData = JSON.parse(logEntry.message);
+
+      // Check if the log data contains balance information
+      if (logData.hasOwnProperty('balance')) {
+        const newBalance = logData.balance;
+        sendDiscordMessage(`Your current balance is ${newBalance} points.`);
+      }
+    } catch (error) {
+      console.error('Error parsing console log:', error);
+    }
+  }
+};
+
 const panelHTML = `
     <style>
         .btn{
@@ -261,7 +281,8 @@ const onRollEnd = (mutation) => {
 
   if (lastColor !== selectedColor) {
     // You lost the last round, specify the winning color
-    sendDiscordMessage(`Oops! You lost ${startBet} on ${selectedColor}. ${colors[lastColor]} won.`);
+    const winningColor = lastColor === "dark" ? "black" : lastColor;
+    sendDiscordMessage(`Oops! You lost ${startBet} on ${selectedColor}. ${winningColor} won.`);
   } else if (previousColor === lastColor) {
     // You won the last round
     sendDiscordMessage(`Congratulations! You won ${bet * 2} on ${selectedColor}.`);
@@ -287,7 +308,10 @@ const onRollEnd = (mutation) => {
   beted = false;
 
   !lastGreen && setTimeout(() => doBet(), 10000);
+
+  updateBalance();
 };
+
 
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => onRollEnd(mutation));
