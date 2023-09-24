@@ -235,8 +235,17 @@ const changeState = (newState) => {
 const onRollEnd = (mutation) => {
   if (!mutation.addedNodes.length) return;
 
+  const previousSelectedColor = selectedColor;
   lastColor = balls.lastChild.children[0].classList[0];
   lastColorPanel.innerHTML = colors[lastColor];
+
+  if (lastColor === selectedColor) {
+    // You won the last round
+    sendDiscordMessage(`Congratulations! You won ${bet} on ${selectedColor}.`);
+  } else {
+    // You lost the last round
+    sendDiscordMessage(`Oops! You lost ${bet} on ${previousSelectedColor}.`);
+  }
 
   bet =
     lastColor !== selectedColor &&
@@ -257,15 +266,9 @@ const onRollEnd = (mutation) => {
 
   beted = false;
 
-  // Check if it's a win or a loss and send a Discord message accordingly
-  if (lastColor === selectedColor) {
-    sendDiscordMessage(`Congratulations! You won ${bet} on ${selectedColor}.`);
-  } else {
-    sendDiscordMessage(`Oops! You lost ${bet} on ${selectedColor}.`);
-  }
-
   !lastGreen && setTimeout(() => doBet(), 10000);
 };
+
 
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => onRollEnd(mutation));
