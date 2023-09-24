@@ -211,12 +211,22 @@ const doBet = () => {
   // Calculate the bet amount based on whether it's a win or a loss
   const betAmount = beted ? bet * 2 : startBet;
 
+  // Check if the calculated bet amount exceeds the maximum bet
+  if (maxBet && betAmount > maxBet) {
+    // Set the bet amount to the maximum bet if exceeded
+    betAmount = maxBet;
+  }
+
   betInput.value = betAmount.toString();
   betButtons[selectedColor].click();
   beted = true;
 
+  // Update the bet amount for the next round
+  bet = betAmount;
+
   sendDiscordMessage(`Placed a bet of ${betAmount} on ${selectedColor}.`);
 };
+
 
 
 const changeState = (newState) => {
