@@ -201,7 +201,9 @@ const doBet = () => {
   betInput.value = bet.toString();
   betButtons[selectedColor].click();
   beted = true;
-  sendBettingMessage(selectedColor, bet); // Send betting message
+
+  // Send betting message
+  sendDiscordMessage(`Betting ${bet} on ${selectedColor}`);
 };
 
 const changeState = (newState) => {
@@ -224,9 +226,11 @@ const changeState = (newState) => {
   !isRolling && doBet();
 
   if (newState) {
-    sendStartingMessage(startBet, maxBet); // Send starting message
+    // Send starting message
+    sendDiscordMessage(`Script is starting. Minimum bet is ${startBet} and maximum bet is ${maxBet}`);
   } else {
-    sendStoppingMessage(); // Send stopping message
+    // Send stopping message
+    sendDiscordMessage('Script was stopped');
   }
 };
 
