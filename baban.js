@@ -36,6 +36,26 @@ async function sendDiscordMessage(message) {
   }
 }
 
+function sendStartingMessage(minBet, maxBet) {
+  sendDiscordMessage(`Script is starting. Minimum bet is ${minBet} and maximum bet is ${maxBet}`);
+}
+
+function sendBettingMessage(color, amount) {
+  sendDiscordMessage(`Betting ${amount} on ${color}`);
+}
+
+function sendWinningMessage(color, amount) {
+  sendDiscordMessage(`Won ${amount} by betting on ${color}`);
+}
+
+function sendLosingMessage(color, amount, rightColor) {
+  sendDiscordMessage(`Lost ${amount} on ${color}. Right color was ${rightColor}`);
+}
+
+function sendStoppingMessage() {
+  sendDiscordMessage('Script was stopped');
+}
+
 const panel = document.querySelector(".leftSide");
 
 document.querySelector(".games")?.remove();
